@@ -19,8 +19,9 @@ export function useBatcher() {
   // Notify update
   const notifyEffectUpdate: NotifyEffectUpdate = callback => {
     if (!updateFuncRef.current) {
+      // 这里相当于也是一个批处理操作
       updateFuncRef.current = [];
-
+      // 利用 messageChannel 触发一个宏任务来清空 待更新的任务队列
       channelUpdate(() => {
         unstable_batchedUpdates(() => {
           updateFuncRef.current.forEach(fn => {

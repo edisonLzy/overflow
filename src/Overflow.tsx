@@ -92,33 +92,35 @@ function Overflow<ItemType = any>(
   const fullySSR = ssr === 'full';
 
   const notifyEffectUpdate = useBatcher();
-
+  // 容器宽度
   const [containerWidth, setContainerWidth] = useEffectState<number>(
     notifyEffectUpdate,
     null,
   );
   const mergedContainerWidth = containerWidth || 0;
-
+  // 收集每一项的宽度
   const [itemWidths, setItemWidths] = useEffectState(
     notifyEffectUpdate,
     new Map<React.Key, number>(),
   );
-
+  // 记录上一次 restNode的宽度
   const [prevRestWidth, setPrevRestWidth] = useEffectState<number>(
     notifyEffectUpdate,
     0,
   );
+  // 记录本次 restNode的宽度
   const [restWidth, setRestWidth] = useEffectState<number>(
     notifyEffectUpdate,
     0,
   );
-
+  // 记录 suffixNode的宽度
   const [suffixWidth, setSuffixWidth] = useEffectState<number>(
     notifyEffectUpdate,
     0,
   );
+  // ?? 
   const [suffixFixedStart, setSuffixFixedStart] = useState<number>(null);
-
+  // 展示的 item数量
   const [displayCount, setDisplayCount] = useState<number>(null);
   const mergedDisplayCount = React.useMemo(() => {
     if (displayCount === null && fullySSR) {
@@ -127,7 +129,7 @@ function Overflow<ItemType = any>(
 
     return displayCount || 0;
   }, [displayCount, containerWidth]);
-
+  // 
   const [restReady, setRestReady] = useState(false);
 
   const itemPrefixCls = `${prefixCls}-item`;
@@ -144,9 +146,12 @@ function Overflow<ItemType = any>(
    * When is `responsive`, we will always render rest node to get the real width of it for calculation
    */
   const showRest =
+    // Responsive mode 下 总是显示 restNode
     shouldResponsive ||
+    // data.length > props.maxCount 显示 restNode
     (typeof maxCount === 'number' && data.length > maxCount);
 
+  // 可展示的 item , response模式下为 可以理解为 传入的items
   const mergedData = useMemo(() => {
     let items = data;
 
@@ -160,6 +165,7 @@ function Overflow<ItemType = any>(
         );
       }
     } else if (typeof maxCount === 'number') {
+      // 展示前 maxCount个 item
       items = data.slice(0, maxCount);
     }
 
@@ -170,6 +176,7 @@ function Overflow<ItemType = any>(
     if (shouldResponsive) {
       return data.slice(mergedDisplayCount + 1);
     }
+    // restItems
     return data.slice(mergedData.length);
   }, [data, mergedData, shouldResponsive, mergedDisplayCount]);
 
@@ -207,6 +214,7 @@ function Overflow<ItemType = any>(
 
     setDisplayCount(count);
     if (!notReady) {
+      // 这个状态用来展示 restNode
       setRestReady(count < data.length - 1);
 
       onVisibleChange?.(count);
@@ -236,7 +244,11 @@ function Overflow<ItemType = any>(
   }
 
   function registerOverflowSize(_: React.Key, width: number | null) {
+    console.log(width);
+    
+    // 保存本次 render中的 width
     setRestWidth(width!);
+    // 保存上一次 render中的 width
     setPrevRestWidth(restWidth);
   }
 
@@ -255,6 +267,7 @@ function Overflow<ItemType = any>(
       typeof mergedRestWidth === 'number' &&
       mergedData
     ) {
+      // 
       let totalWidth = suffixWidth;
 
       const len = mergedData.length;
@@ -276,6 +289,8 @@ function Overflow<ItemType = any>(
 
         // Break since data not ready
         if (currentItemWidth === undefined) {
+          console.log('render');
+          
           updateDisplayCount(i - 1, undefined, true);
           break;
         }
@@ -349,6 +364,7 @@ function Overflow<ItemType = any>(
               item,
               itemKey: key,
               registerSize,
+              // 小于 mergedDisplayCount 就展示
               display: index <= mergedDisplayCount,
             }}
           >
@@ -376,6 +392,7 @@ function Overflow<ItemType = any>(
   // >>>>> Rest node
   let restNode: React.ReactNode;
   const restContextProps = {
+    // restItem 从 最后一个展示的item + 1 开始
     order: displayRest ? mergedDisplayCount : Number.MAX_SAFE_INTEGER,
     className: `${itemPrefixCls}-rest`,
     registerSize: registerOverflowSize,
@@ -416,6 +433,7 @@ function Overflow<ItemType = any>(
       ref={ref}
       {...restProps}
     >
+      {/* 渲染 display 的 item  */}
       {mergedData.map(internalRenderItemNode)}
 
       {/* Rest Count Item */}
@@ -439,6 +457,7 @@ function Overflow<ItemType = any>(
     </Component>
   );
 
+  // isResponsive的逻辑
   if (isResponsive) {
     overflowNode = (
       <ResizeObserver onResize={onOverflowResize} disabled={!shouldResponsive}>

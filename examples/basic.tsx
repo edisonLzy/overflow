@@ -98,7 +98,7 @@ const Demo = () => {
           renderItem={renderItem}
           renderRest={renderRest}
           maxCount={responsive ? 'responsive' : 6}
-          // suffix={<span>1</span>}
+          // suffix={<span>1123123123</span>}
         />
       </div>
     </div>

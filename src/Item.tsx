@@ -32,6 +32,7 @@ function InternalItem<ItemType>(
   props: ItemProps<ItemType>,
   ref: React.Ref<any>,
 ) {
+  //
   const {
     prefixCls,
     invalidate,
@@ -49,7 +50,7 @@ function InternalItem<ItemType>(
     component: Component = 'div',
     ...restProps
   } = props;
-
+  // 
   const mergedHidden = responsive && !display;
 
   // ================================ Effect ================================
@@ -59,6 +60,7 @@ function InternalItem<ItemType>(
 
   React.useEffect(
     () => () => {
+      // null means remove item in sizeMap
       internalRegisterSize(null);
     },
     [],
@@ -70,6 +72,7 @@ function InternalItem<ItemType>(
 
   let overflowStyle: React.CSSProperties | undefined;
   if (!invalidate) {
+    // ?
     overflowStyle = {
       opacity: mergedHidden ? 0 : 1,
       height: mergedHidden ? 0 : UNDEFINED,
